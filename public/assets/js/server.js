@@ -24,15 +24,27 @@ app.post('/api/notes', (req, res) => {
       console.error(error);
       return;
     }
+
     try {
       parsed = JSON.parse(data);
-      note.id = (parseInt(parsed[parsed.length - 1].id) + 1).toString();
+      if (note.id) {
+        for (let thisNote in parsed) {
+          if (thisNote.id === note.id) {
+            thisNote.title = note.title;
+            thisNote.text = note.text;
+          }
+        }
+      } else {
+        note.id = (parseInt(parsed[parsed.length - 1].id) + 1).toString();
+        parsed.push(note);
+      }
+      
     } catch {
       parsed = [];
       note.id = "0";
+      parsed.push(note);
     }
-    parsed.push(note);
-
+    
     const str = JSON.stringify(parsed);
 
     fs.writeFile(path.resolve('db/', 'db.json'), str, error => {
